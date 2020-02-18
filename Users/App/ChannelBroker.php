@@ -11,7 +11,7 @@ class ChannelBroker
     /**
      * @var Service[] $queues
      */
-    private static $queues = [
+    private static array $queues = [
         UserRegisterService::CHANNEL => UserRegisterService::class
     ];
 
@@ -24,6 +24,11 @@ class ChannelBroker
             $handlerInstance = new $handler();
             $channel->queue_declare($queue, false, false, false, false);
             $channel->basic_consume($queue, '', false, true, false, false, $handlerInstance->handler());
+
+            $writingQueues = $handlerInstance->getWritingQueues();
+            foreach ($writingQueues as $writingQueue) {
+                $channel->queue_declare($writingQueue, false, false, false, false);
+            }
         }
     }
 }

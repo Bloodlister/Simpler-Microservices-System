@@ -7,6 +7,11 @@ use Throwable;
 
 class App
 {
+    /**
+     * @var AMQPStreamConnection
+     */
+    private static AMQPStreamConnection $connection;
+
     public static function run(): void
     {
         Config::init();
@@ -31,16 +36,23 @@ class App
         $connected = false;
         while (!$connected) {
             try {
-                return new AMQPStreamConnection(
+                static::$connection = new AMQPStreamConnection(
                     $rabbitMQConfig['host'],
                     $rabbitMQConfig['port'],
                     $rabbitMQConfig['username'],
                     $rabbitMQConfig['password']
                 );
+
+                return static::$connection;
             } catch (Throwable $exception) {
                 trigger_error("Couldn't connect to RabbitMQ: " . $rabbitMQConfig['host'] . ':' . $rabbitMQConfig['port'] . ' Exception: ' . $exception->getMessage());
                 sleep(3);
             }
         }
+    }
+
+    public static function getConnection(): AMQPStreamConnection
+    {
+        return static::$connection;
     }
 }

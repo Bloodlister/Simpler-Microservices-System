@@ -4,5 +4,5 @@ namespace App\MessageBrokers;
 
 interface BrokerInterface
 {
-    public function send(string $channel, array $data = []);
+    public function publish(string $channel, array $data = []);
 }

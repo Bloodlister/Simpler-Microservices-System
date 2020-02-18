@@ -2,10 +2,15 @@
 
 namespace App\MessageBrokers;
 
+use App\App;
+use PhpAmqpLib\Message\AMQPMessage;
+
 class RabbitMQ implements BrokerInterface
 {
-    public function send(string $channel, array $data = [])
+    public function publish(string $queue, array $data = [])
     {
-
+        $connection = App::getConnection();
+        $connection->channel()
+            ->basic_publish(new AMQPMessage(json_encode($data), $queue));
     }
 }

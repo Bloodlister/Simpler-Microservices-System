@@ -17,14 +17,6 @@ services:
       - RABBITMQ_DEFAULT_USER=rabbitmq_user
       - RABBITMQ_DEFAULT_PASS=password
 
-  rabbit_mq_management:
-    image: rabbitmq:3-management
-    environment:
-      - VIRTUAL_HOST=rabbitmq.manage.com
-      - VIRTUAL_PORT=15672
-      - RABBITMQ_DEFAULT_USER="username"
-      - RABBITMQ_DEFAULT_PASS="password"
-
   postgres:
     image: postgres:9.6-alpine
     restart: always
@@ -40,18 +32,11 @@ services:
   users_front:
     depends_on:
       - rabbitmq
-    image: nginx:1.17-alpine
+    build: ./UsersFront
     restart: always
     environment:
       - VIRTUAL_HOST=simple.users.com
-    volumes:
-      - ./UsersFront:/usr/src/app
-      - ./UsersFront/nginx.conf:/etc/nginx/conf.d/site.conf
-    links:
-      - users_front_php
-
-  users_front_php:
-    image: php:7.4-fpm
+      - VIRTUAL_PORT=8080
     volumes:
       - ./UsersFront:/usr/src/app
 

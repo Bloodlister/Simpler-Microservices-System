@@ -2,8 +2,10 @@
 
 const express = require('express');
 const bodyParser = require('body-parser');
+const jwt = require('jsonwebtoken');
+const rabbitmq = require('./rabbitmq.js');
 const redis = require('./redis.js');
-const rabbitmq = require('./rabbitmq');
+const users = require('./users.js');
 
 const PORT = 8080;
 
@@ -22,7 +24,6 @@ app.post('/users', async (req, res) => {
     let passwordConf = req.body.passwordConf;
 
     redis.get('user_' + username, (err, username) => {
-        console.log('Here');
         if (err) {
             throw err;
         }

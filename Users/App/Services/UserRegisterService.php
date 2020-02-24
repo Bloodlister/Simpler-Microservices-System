@@ -6,11 +6,12 @@ use App\Connection;
 use App\Exception\DuplicateUserException;
 use App\Exception\QueryException;
 use App\Models\User;
+use App\Services\Payloads\Payload;
 use App\Services\Payloads\UserRegisterPayload;
 
 class UserRegisterService extends Service
 {
-    public const CHANNEL = 'onUserRegisterRequest';
+    public const CHANNEL = 'userRegisterRequest';
 
     public const PAYLOAD_CLASS = UserRegisterPayload::class;
 
@@ -29,14 +30,14 @@ class UserRegisterService extends Service
      * @throws DuplicateUserException
      * @throws QueryException
      */
-    public function run(UserRegisterPayload $payload): void
+    public function run(Payload $payload): void
     {
         $user = $this->getUser($payload->username);
         if ($user) {
             throw new DuplicateUserException(sprintf('Username `%1$s` is already taken.', $payload->username));
         }
 
-        $password = password_hash($payload->password, PASSWORD_BCRYPT);
+        $password = md5($payload->password);
         $result = $this->registerUser($payload->username, $password);
         if (!$result) {
             throw new QueryException('Could not add user to database');

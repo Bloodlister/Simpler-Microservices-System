@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\MessageBrokers\BrokerInterface;
 use App\MessageBrokers\RabbitMQ;
+use App\Services\Payloads\Payload;
 use PhpAmqpLib\Message\AMQPMessage;
 
 abstract class Service
@@ -34,4 +35,6 @@ abstract class Service
     }
 
     abstract function getWritingQueues(): array;
+
+    abstract function run(Payload $payload): void;
 }

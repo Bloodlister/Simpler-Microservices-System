@@ -1,4 +1,5 @@
 const rabbitmq = require('amqplib/callback_api');
+const redis = require('./redis');
 let connection;
 let channel;
 
@@ -23,21 +24,30 @@ function connectToChannels() {
     return new Promise((resolve, reject) => {
         connection.createChannel((err, mqChannel) => {
             if (err) reject(err);
-
             channel = mqChannel;
 
-            mqChannel.assertQueue('userRegisterResults', {
-                durable: false
-            });
+            listenForUserRegistrations(channel);
 
             resolve(channel);
         });
     });
 }
 
+function listenForUserRegistrations(channel) {
+    channel.assertQueue('userRegisterResults', {
+        durable: false
+    });
+
+
+    channel.consume('userRegisterResults', (msg) => {
+        let msgData = JSON.stringify(msg.content.toString());
+        if (msgData.success) {
+            redis.setUserJWT(msgData.username, {passwordHash: msgData.passwordHash});
+        }
+    });
+}
+
 module.exports = {
-    connection,
     connectToRabbitMQ,
     connectToChannels,
-    channel,
 };

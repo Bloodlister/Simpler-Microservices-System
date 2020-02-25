@@ -17,7 +17,7 @@ function connectToRedis() {
 
 function getUserJWT(username) {
   return new Promise((resolve, reject) => {
-    connection.get('jwt_' + username, function (err, result) {
+    redisClient.get(username, (err, result) => {
       if (err) reject(err);
 
       resolve(result);
@@ -27,7 +27,7 @@ function getUserJWT(username) {
 
 function setUserJWT(username, token) {
   return new Promise((resolve, reject) => {
-    connection.set('jwt_' + username, token, (err) => {
+    redisClient.set(username, token, (err) => {
       if (err) reject(err);
 
       resolve(token);
@@ -35,17 +35,8 @@ function setUserJWT(username, token) {
   })
 }
 
-function getUserPasswordHash(username) {
-  return new Promise((resolve, reject) => {
-    connection.get('pass_' + username, function (err, result) {
-      if (err) reject(err);
-
-      resolve(result);
-    });
-  });
-}
-
 module.exports = {
+  JWT_SECRET,
   connection: redisClient,
   connectToRedis,
   getUserJWT,

@@ -9,7 +9,6 @@ function connectToRedis() {
 
     redisClient.on('connect', () => {
       console.log('Connected to redis server');
-      redisClient = redisClient;
       resolve(redisClient);
     });
   });
@@ -36,10 +35,8 @@ function setUserJWT(username, token) {
 }
 
 module.exports = {
-  JWT_SECRET,
   connection: redisClient,
   connectToRedis,
   getUserJWT,
   setUserJWT,
-  getUserPasswordHash,
 };

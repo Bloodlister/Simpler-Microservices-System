@@ -35,10 +35,17 @@ services:
     build: ./UsersFront
     restart: always
     environment:
-      - VIRTUAL_HOST=simple.users.com
+      - VIRTUAL_HOST=users.simple.com
       - VIRTUAL_PORT=8080
     volumes:
       - ./UsersFront:/usr/src/app
+
+  front_end:
+    build: ./FrontEnd
+    environment:
+      - VIRTUAL_HOST=front.simple.com
+    volumes:
+      - ./FrontEnd:/usr/src/app
 
 # USERS LISTENER
   users_back:
@@ -46,6 +53,13 @@ services:
       - rabbitmq
     build: ./Users
     restart: always
+
+  websocket:
+    build: ./WebSocket
+    environment:
+      - VIRTUAL_HOST=ws.simple.com
+    volumes:
+      - ./WebSocket:/usr/src/app
 
 networks:
   default:

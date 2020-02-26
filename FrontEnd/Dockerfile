@@ -1,8 +1,13 @@
-FROM nginx:1.17
+FROM node:8-buster
 
 WORKDIR /usr/src/app
 
-COPY ./nignx.conf /etc/nginx/conf.d/default.conf
-COPY ./dist /usr/src/app/dist
+COPY package*.json ./
 
-EXPOSE 80
+RUN npm install
+
+COPY . .
+
+EXPOSE 8080
+
+CMD [ "npm", "run", "serve" ]

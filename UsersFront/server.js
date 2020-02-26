@@ -7,14 +7,17 @@ const rabbitmq = require('./rabbitmq.js');
 const redis = require('./redis.js');
 const users = require('./users.js');
 const cors = require('cors');
+const md5 = require('md5');
 
 const PORT = 8080;
 
 const app = express();
 
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
-app.use(cors());
+app.use(cors({
+    origin: '*',
+}));
 
 
 app.get('/', (req, res) => {
@@ -26,15 +29,15 @@ app.post('/users', async (req, res) => {
     let password = req.body.password;
     let passwordConf = req.body.passwordConf;
 
-    let token = redis.getUserJWT(username);
+    let token = await redis.getUserJWT(username);
 
-    if (token) {
-        res.status(400).send(JSON.stringify({ error: 'UserAlreadyExistsException' }));
+    if (token !== null) {
+        res.status(400).send(JSON.stringify({error: 'UserAlreadyExistsException'}));
         return;
     }
 
     if (password !== passwordConf) {
-        res.status(400).send(JSON.stringify({ error: 'PasswordMismatchException' }));
+        res.status(400).send(JSON.stringify({error: 'PasswordMismatchException'}));
         return;
     }
 
@@ -45,21 +48,26 @@ app.post('/users', async (req, res) => {
             passwordConf: passwordConf,
         };
 
-        rabbitmq.channel.sendToQueue('userRegisterRequest', Buffer.from(JSON.stringify(registerDetails)));
-        res.status(200).send(JSON.stringify({ status: 'WaitingConfirmation' }));
+        rabbitmq.getChannel().sendToQueue('userRegisterRequest', Buffer.from(JSON.stringify(registerDetails)));
+        res.status(200).send(JSON.stringify({status: 'WaitingConfirmation'}));
     }
 });
 
 app.post('/token', async (req, res) => {
     let username = req.body.username;
-    let passwordHash = req.body.passwordHash;
+    let passwordHash = md5(req.body.password);
 
     let token = await redis.getUserJWT(username);
+
+    if (token === null) {
+        res.status(401).send(JSON.stringify({error: 'Unauthorized'}));
+    }
+
     try {
-        let tokenData = users.decodeToken(token);
+        let tokenData = await users.decodeToken(token);
 
         if (tokenData) {
-            res.status(200).send(JSON.stringify({ token: token }));
+            res.status(200).send(JSON.stringify({token: token}));
         }
     } catch (e) {
         if (e.name === 'TokenExpiredError') {
@@ -74,10 +82,12 @@ app.post('/token', async (req, res) => {
                     res.status(201).send(JSON.stringify({token: token}));
                     return;
                 });
+        } else {
+            res.status(500).send(JSON.stringify({error: e.message}));
+            return;
         }
     }
 });
-
 
 
 (async function () {

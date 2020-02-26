@@ -44,6 +44,7 @@ services:
     build: ./FrontEnd
     environment:
       - VIRTUAL_HOST=front.simple.com
+      - VIRTUAL_PORT=8080
     volumes:
       - ./FrontEnd:/usr/src/app
 
@@ -53,6 +54,8 @@ services:
       - rabbitmq
     build: ./Users
     restart: always
+    volumes:
+      - ./Users:/usr/src/app
 
   websocket:
     build: ./WebSocket

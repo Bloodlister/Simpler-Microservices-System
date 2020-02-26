@@ -1,7 +1,7 @@
 <template>
     <div>
-        Username: <input type="text" v-bind="username">
-        Password: <input type="password" v-bind="password">
+        Username: <input type="text" v-model="username">
+        Password: <input type="password" v-model="password">
         <button @click="login">Login</button>
     </div>
 </template>
@@ -17,7 +17,7 @@
         },
         methods: {
             login() {
-                this.axios.post('http://users.simple.com', {username: this.username, password: this.password})
+                this.axios.post('http://users.simple.com/token', {username: this.username, password: this.password})
                     .then(result => console.log(result.data));
             }
         }

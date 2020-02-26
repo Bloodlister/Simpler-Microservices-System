@@ -3,7 +3,7 @@
     "host": "postgres",
     "username": "postgres",
     "password": "postgres",
-    "database": "users"
+    "database": "postgres"
   },
   "rabbit_mq": {
     "host": "rabbitmq",

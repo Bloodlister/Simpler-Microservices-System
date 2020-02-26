@@ -1,8 +1,8 @@
 <template>
     <div>
-        Username: <input type="text" v-bind="username">
-        Password: <input type="password" v-bind="password">
-        Confirm Password: <input type="password" v-bind="password_conf">
+        Username: <input type="text" v-model="username">
+        Password: <input type="password" v-model="password">
+        Confirm Password: <input type="password" v-model="passwordConf">
         <button @click="register">Register</button>
     </div>
 </template>
@@ -14,12 +14,19 @@
             return {
                 username: '',
                 password: '',
-                password_conf: '',
+                passwordConf: '',
             }
         },
         methods: {
             register() {
-                console.log('Registering');
+                let requestData = {
+                    username: this.username,
+                    password: this.password,
+                    passwordConf: this.passwordConf,
+                };
+
+                this.axios.post('http://users.simple.com/users', requestData)
+                    .then(response => console.log(response.data));
             }
         }
     }

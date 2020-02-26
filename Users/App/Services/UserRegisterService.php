@@ -53,22 +53,28 @@ class UserRegisterService extends Service
     private function registerUser(string $username, string $password): bool
     {
         $db = Connection::connect();
-        $stmt = $db->prepare('INSERT INTO `users`(`username`, `password`, `created_on`) VALUES (:username, :password, NOW())');
+        $stmt = $db->prepare('INSERT INTO "public"."users"(username, password, created_on) VALUES (:username, :password, NOW())');
+
         return $stmt->execute([
             'username' => $username,
-            'password' => password_hash($password, PASSWORD_BCRYPT)
+            'password' => $password
         ]);
     }
 
-    private function getUser(string $username): User
+    private function getUser(string $username): ?User
     {
         $db = Connection::connect();
-        $stmt = $db->prepare('SELECT * FROM `users` WHERE username = :username');
+        $stmt = $db->prepare('SELECT * FROM "users" WHERE username = :username');
         $stmt->execute([
             'username' => $username
         ]);
+        $record = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-        return new User($stmt->fetch(\PDO::FETCH_ASSOC));
+        if ($record) {
+            return new User($record);
+        }
+
+        return null;
     }
 
 }

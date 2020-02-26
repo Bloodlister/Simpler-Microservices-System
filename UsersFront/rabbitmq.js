@@ -25,7 +25,6 @@ function connectToChannels() {
         connection.createChannel((err, mqChannel) => {
             if (err) reject(err);
             channel = mqChannel;
-
             listenForUserRegistrations(channel);
 
             resolve(channel);
@@ -38,7 +37,6 @@ function listenForUserRegistrations(channel) {
         durable: false
     });
 
-
     channel.consume('userRegisterResults', (msg) => {
         let msgData = JSON.stringify(msg.content.toString());
         if (msgData.success) {
@@ -47,7 +45,12 @@ function listenForUserRegistrations(channel) {
     });
 }
 
+function getChannel() {
+    return channel;
+}
+
 module.exports = {
     connectToRabbitMQ,
     connectToChannels,
+    getChannel,
 };

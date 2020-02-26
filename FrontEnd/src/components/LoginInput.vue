@@ -17,7 +17,8 @@
         },
         methods: {
             login() {
-                console.log('Logging in');
+                this.axios.post('http://users.simple.com', {username: this.username, password: this.password})
+                    .then(result => console.log(result.data));
             }
         }
     }

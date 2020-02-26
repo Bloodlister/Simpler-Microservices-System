@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const rabbitmq = require('./rabbitmq.js');
 const redis = require('./redis.js');
 const users = require('./users.js');
+const cors = require('cors');
 
 const PORT = 8080;
 
@@ -13,6 +14,8 @@ const app = express();
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(cors());
+
 
 app.get('/', (req, res) => {
     res.send('well helloo there');

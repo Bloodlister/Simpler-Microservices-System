@@ -1,6 +1,4 @@
 const jwt = require('jsonwebtoken');
-const reddis = require('./redis.js');
-const md5 = require('md5');
 
 const JWT_SECRET = 'secret';
 

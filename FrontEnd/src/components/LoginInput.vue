@@ -7,6 +7,8 @@
 </template>
 
 <script>
+    import toastr from 'toastr';
+
     export default {
         name: "LoginInput",
         data() {
@@ -18,7 +20,10 @@
         methods: {
             login() {
                 this.axios.post('http://users.simple.com/token', {username: this.username, password: this.password})
-                    .then(result => console.log(result.data));
+                    .then(result => toastr.success(JSON.stringify(result.data)))
+                    .catch(err => {
+                        toastr.error(err.response.data.error);
+                    })
             }
         }
     }

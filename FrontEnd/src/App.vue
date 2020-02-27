@@ -10,10 +10,20 @@
 </template>
 
 <script>
+    import {getUniqueId} from '@/utilities.js';
+    import {connectToSocket, disconnectFromSocket} from "@/WebSocket";
+
     export default {
         name: 'App',
         mounted() {
-
+            getUniqueId()
+                .then(uniqueId => {
+                    this.$store.commit('setUniqueId', uniqueId);
+                    connectToSocket(uniqueId);
+                });
+        },
+        beforeDestroy() {
+            disconnectFromSocket();
         }
     }
 </script>

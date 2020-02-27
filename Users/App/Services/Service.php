@@ -5,6 +5,7 @@ namespace App\Services;
 use App\MessageBrokers\BrokerInterface;
 use App\MessageBrokers\RabbitMQ;
 use App\Services\Payloads\Payload;
+use App\WebSocket;
 use PhpAmqpLib\Message\AMQPMessage;
 
 abstract class Service
@@ -29,8 +30,11 @@ abstract class Service
             $payloadClass = static::PAYLOAD_CLASS;
             $payload = new $payloadClass(json_decode($msg->body, true));
             $this->setBroker(new RabbitMQ());
-
-            $this->run($payload);
+            try {
+                $this->run($payload);
+            } catch (\Exception $exception) {
+                WebSocket::send($payload->issuer, new WebSocket\ToastrNotification(WebSocket\ToastrNotification::STATUS_ERROR, 'Something went wrong', $exception->getMessage()));
+            }
         };
     }
 

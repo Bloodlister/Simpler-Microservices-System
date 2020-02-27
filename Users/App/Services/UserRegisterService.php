@@ -8,6 +8,8 @@ use App\Exception\QueryException;
 use App\Models\User;
 use App\Services\Payloads\Payload;
 use App\Services\Payloads\UserRegisterPayload;
+use App\WebSocket;
+use App\WebSocket\ToastrNotification;
 
 class UserRegisterService extends Service
 {
@@ -48,6 +50,8 @@ class UserRegisterService extends Service
             'username' => $payload->username,
             'password' => $password
         ]);
+
+        WebSocket::send($payload->issuer, new ToastrNotification(ToastrNotification::STATUS_SUCCESS, 'Registration Complete'));
     }
 
     private function registerUser(string $username, string $password): bool

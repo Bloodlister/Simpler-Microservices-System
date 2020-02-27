@@ -14,7 +14,20 @@ function connectToRedis() {
   });
 };
 
-function getUserJWT(username) {
+function tryUntilConnected(interval) {
+  return new Promise(resolve => {
+    connectToRedis()
+        .then(res => resolve(res))
+        .catch(err => {
+          console.log(err);
+          setTimeout(() => {
+            tryUntilConnected(interval);
+          }, interval)
+        });
+  });
+}
+
+function getUser(username) {
   return new Promise((resolve, reject) => {
     redisClient.get(username, (err, result) => {
       if (err) reject(err);
@@ -24,9 +37,19 @@ function getUserJWT(username) {
   });
 }
 
+function getUserJWT(username) {
+  return new Promise((resolve, reject) => {
+    redisClient.get('jwt_' + username, (err, result) => {
+      if (err) reject(err);
+
+      resolve(result);
+    });
+  });
+}
+
 function setUserJWT(username, token) {
   return new Promise((resolve, reject) => {
-    redisClient.set(username, token, (err) => {
+    redisClient.set('jwt_' + username, token, (err) => {
       if (err) reject(err);
 
       resolve(token);
@@ -37,6 +60,7 @@ function setUserJWT(username, token) {
 module.exports = {
   connection: redisClient,
   connectToRedis,
+  tryUntilConnected,
   getUserJWT,
   setUserJWT,
 };

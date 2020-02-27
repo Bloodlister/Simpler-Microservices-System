@@ -8,28 +8,13 @@ use Ratchet\MessageComponentInterface;
 class Socket implements MessageComponentInterface
 {
 
-    public const OPENSSL_METHOD = 'AES-128-ECB';
+    protected const WS_SYSTEMS = [
+        'users_back',
+        'users_front',
+    ];
 
     /** @var \SplObjectStorage[] $users */
     protected $users = [];
-
-    /**
-     * @param string $hash
-     * @return array
-     */
-    public static function getUserIdentifier(string $hash): string
-    {
-        return openssl_decrypt($hash, static::OPENSSL_METHOD, USER_AUTH_SALT);
-    }
-
-    /**
-     * @param string $identifier
-     * @return string
-     */
-    public static function generateUserHash(string $identifier): string
-    {
-        return openssl_encrypt($identifier, static::OPENSSL_METHOD, USER_AUTH_SALT);
-    }
 
     /**
      * When a new connection is opened it will be passed to this method
@@ -43,18 +28,18 @@ class Socket implements MessageComponentInterface
             return;
         }
 
-        $user = self::getUserIdentifier($conn->httpRequest->getUri()->getQuery());
+        $userUid = $conn->httpRequest->getUri()->getQuery();
 
         // Check if the provided hash was invalid
-        if (!$user) {
+        if (!$userUid) {
             $conn->close();
             return;
         }
 
-        $conn->clientId = $user;
+        $conn->clientId = $userUid;
 
         // Setup a storage for the user's connections
-        $this->users[self::userIdentifier($user)][] = $conn;
+        $this->users[$userUid][] = $conn;
     }
 
     /**
@@ -66,8 +51,8 @@ class Socket implements MessageComponentInterface
     {
         $conn->close();
 
-        if (count($this->users[self::userIdentifier($conn->clientId)]) === 0) {
-            unset($this->users[self::userIdentifier($conn->clientId)]);
+        if (count($this->users[$conn->clientId]) === 0) {
+            unset($this->users[$conn->clientId]);
         }
     }
 
@@ -82,8 +67,8 @@ class Socket implements MessageComponentInterface
     {
         $conn->close();
 
-        if (count($this->users[self::userIdentifier($conn->clientId)]) === 0) {
-            unset($this->users[self::userIdentifier($conn->clientId)]);
+        if (count($this->users[$conn->clientId]) === 0) {
+            unset($this->users[$conn->clientId]);
         }
     }
 
@@ -97,8 +82,8 @@ class Socket implements MessageComponentInterface
     {
         $data = json_decode($msg, true);
 
-        if(is_numeric($data['to_user']) && self::isSysProcess($from->clientId)){
-            $userConnections = $this->users[self::userIdentifier($data['to_user'])];
+        if($data['receiver'] && self::isSysProcess($from->clientId)){
+            $userConnections = $this->users[$data['receiver']];
 
             foreach ($userConnections as $connection) {
                 /** @var ConnectionInterface $connection */
@@ -107,22 +92,12 @@ class Socket implements MessageComponentInterface
         }
     }
 
-
-    /**
-     * @param string $user
-     * @return string
-     */
-    private static function userIdentifier($user): string
-    {
-        return $user === WS_SYSTEM_USER_ID ? $user : 'user_' . $user;
-    }
-
     /**
      * @param string $user
      * @return bool
      */
     private static function isSysProcess($user): bool
     {
-        return self::userIdentifier($user) === WS_SYSTEM_USER_ID;
+        return in_array($user, static::WS_SYSTEMS);
     }
 }

@@ -32,6 +32,8 @@ services:
   users_front:
     depends_on:
       - rabbitmq
+      - redis
+      - websocket
     build: ./UsersFront
     restart: always
     environment:
@@ -52,6 +54,8 @@ services:
   users_back:
     depends_on:
       - rabbitmq
+      - redis
+      - websocket
     build: ./Users
     restart: always
     volumes:
@@ -59,6 +63,7 @@ services:
 
   websocket:
     build: ./WebSocket
+    restart: always
     environment:
       - VIRTUAL_HOST=ws.simple.com
     volumes:

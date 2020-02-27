@@ -11,6 +11,6 @@ class RabbitMQ implements BrokerInterface
     {
         $connection = App::getConnection();
         $connection->channel()
-            ->basic_publish(new AMQPMessage(json_encode($data), $queue));
+            ->basic_publish(new AMQPMessage(json_encode($data)), '', $queue);
     }
 }

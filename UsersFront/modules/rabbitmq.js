@@ -1,9 +1,12 @@
 const rabbitmq = require('amqplib/callback_api');
 const redis = require('./redis');
+const jwt = require('jsonwebtoken');
+const users = require('./users.js');
+
 let connection;
 let channel;
 
-function connectToRabbitMQ() {
+async function connectToRabbitMQ() {
     return new Promise((resolve, reject) => {
         rabbitmq.connect({
             hostname: 'rabbitmq',
@@ -20,10 +23,28 @@ function connectToRabbitMQ() {
     });
 }
 
+function tryUntilConnected(interval) {
+    return new Promise(resolve => {
+        connectToRabbitMQ()
+            .then(res => resolve(res))
+            .catch(err => {
+                console.log(err);
+                setTimeout(() => {
+                    resolve(tryUntilConnected(interval));
+                }, interval);
+            })
+    });
+}
+
 function connectToChannels() {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
         connection.createChannel((err, mqChannel) => {
-            if (err) reject(err);
+            if (err) {
+                setTimeout(() => {
+                    connectToChannels()
+                        .then(resolve);
+                }, 3000);
+            }
             channel = mqChannel;
             listenForUserRegistrations(channel);
 
@@ -37,12 +58,13 @@ function listenForUserRegistrations(channel) {
         durable: false
     });
 
-    channel.consume('userRegisterResults', (msg) => {
-        let msgData = JSON.stringify(msg.content.toString());
-        if (msgData.success) {
-            redis.setUserJWT(msgData.username, {passwordHash: msgData.passwordHash});
-        }
-    });
+    channel.consume('userRegisterResult', (msg) => {
+        let msgData = JSON.parse(msg.content.toString());
+        redis.setUserJWT(msgData.username, jwt.sign({passwordHash: msgData.password}, users.JWT_SECRET, {expiresIn: '60000'}));
+
+    }, { noAck: true });
+
+    console.log('Listening to channels');
 }
 
 function getChannel() {
@@ -51,6 +73,7 @@ function getChannel() {
 
 module.exports = {
     connectToRabbitMQ,
+    tryUntilConnected,
     connectToChannels,
     getChannel,
 };

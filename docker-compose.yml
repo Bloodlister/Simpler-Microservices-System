@@ -60,6 +60,15 @@ services:
     restart: always
     volumes:
       - ./Users:/usr/src/app
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASS=postgres
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=rabbitmq_user
+      - RABBITMQ_PASS=password
 
   websocket:
     build: ./WebSocket
@@ -68,11 +77,6 @@ services:
       - VIRTUAL_HOST=ws.simple.com
     volumes:
       - ./WebSocket:/usr/src/app
-
-networks:
-  default:
-    external:
-      name: simple_microservice
 
 volumes:
   psql_db:

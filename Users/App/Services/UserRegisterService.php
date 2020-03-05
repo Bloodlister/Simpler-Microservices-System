@@ -18,11 +18,13 @@ class UserRegisterService extends Service
     public const PAYLOAD_CLASS = UserRegisterPayload::class;
 
     public const QUEUE_USER_REGISTER_RESULTS = 'userRegisterResult';
+    public const QUEUE_WEBSOCKET = 'websocket';
 
     public function getWritingQueues(): array
     {
         return [
-            static::QUEUE_USER_REGISTER_RESULTS
+            static::QUEUE_USER_REGISTER_RESULTS,
+            static::QUEUE_WEBSOCKET,
         ];
     }
 
@@ -51,7 +53,7 @@ class UserRegisterService extends Service
             'password' => $password
         ]);
 
-        WebSocket::send($payload->issuer, new ToastrNotification(ToastrNotification::STATUS_SUCCESS, 'Registration Complete'));
+        $this->broker->websocketMessage($payload->issuer, new ToastrNotification(ToastrNotification::STATUS_SUCCESS, 'Registration Complete'));
     }
 
     private function registerUser(string $username, string $password): bool

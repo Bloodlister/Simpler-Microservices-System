@@ -12,7 +12,6 @@ class WebSocket
 
     public static function send(string $receiver, Message $message)
     {
-        var_dump('RECEIVER: ' . $receiver . ' DATA: ' . json_encode($message->unpack()));
         static::getClient()->send(json_encode(['receiver' => $receiver, 'data' => $message->unpack()]));
     }
 

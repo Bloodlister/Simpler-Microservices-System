@@ -23,6 +23,7 @@ class App
         $channel = $rabbitMQConnection->channel();
 
         ChannelBroker::setup($channel);
+        ChannelBroker::connectToWebsocket($channel);
 
         while ($channel->is_consuming()) {
             $channel->wait();

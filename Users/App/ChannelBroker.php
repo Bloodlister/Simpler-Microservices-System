@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\MessageBrokers\RabbitMQ;
 use App\Services\Service;
 use App\Services\UserRegisterService;
 use PhpAmqpLib\Channel\AMQPChannel;
@@ -30,5 +31,11 @@ class ChannelBroker
                 $channel->queue_declare($writingQueue, false, false, false, false);
             }
         }
+    }
+
+    public static function connectToWebsocket(AMQPChannel $channel): void
+    {
+        $channel->queue_declare(RabbitMQ::QUEUE_WEBSOCKET, false, false, false, false);
+        trigger_error('Writing to websocket channel');
     }
 }

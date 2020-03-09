@@ -15,10 +15,15 @@ abstract class Service
     public const PAYLOAD_CLASS = '';
 
     protected BrokerInterface $broker;
+    /**
+     * @var DatabaseInterface
+     */
+    protected $database;
 
-    public function setBroker(BrokerInterface $broker): void
+    public function __construct(BrokerInterface $broker, DatabaseInterface $database)
     {
         $this->broker = $broker;
+        $this->database = $database;
     }
 
     /**
@@ -29,11 +34,10 @@ abstract class Service
         return function (AMQPMessage $msg) {
             $payloadClass = static::PAYLOAD_CLASS;
             $payload = new $payloadClass(json_decode($msg->body, true));
-            $this->setBroker(new RabbitMQ());
             try {
                 $this->run($payload);
             } catch (\Exception $exception) {
-                WebSocket::send($payload->issuer, new WebSocket\ToastrNotification(WebSocket\ToastrNotification::STATUS_ERROR, 'Something went wrong', $exception->getMessage()));
+                $this->broker->websocketMessage($payload->issuer, new WebSocket\ToastrNotification(WebSocket\ToastrNotification::STATUS_ERROR, 'Something went wrong', $exception->getMessage()));
             }
         };
     }

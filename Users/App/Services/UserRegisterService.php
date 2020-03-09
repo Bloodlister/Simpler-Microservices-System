@@ -5,10 +5,10 @@ namespace App\Services;
 use App\Connection;
 use App\Exception\DuplicateUserException;
 use App\Exception\QueryException;
+use App\MessageBrokers\BrokerInterface;
 use App\Models\User;
 use App\Services\Payloads\Payload;
 use App\Services\Payloads\UserRegisterPayload;
-use App\WebSocket;
 use App\WebSocket\ToastrNotification;
 
 class UserRegisterService extends Service
@@ -19,6 +19,11 @@ class UserRegisterService extends Service
 
     public const QUEUE_USER_REGISTER_RESULTS = 'userRegisterResult';
     public const QUEUE_WEBSOCKET = 'websocket';
+
+    public function __construct(BrokerInterface $broker, DatabaseInterface $database)
+    {
+        parent::__construct($broker, $database);
+    }
 
     public function getWritingQueues(): array
     {
@@ -58,8 +63,7 @@ class UserRegisterService extends Service
 
     private function registerUser(string $username, string $password): bool
     {
-        $db = Connection::connect();
-        $stmt = $db->prepare('INSERT INTO "public"."users"(username, password, created_on) VALUES (:username, :password, NOW())');
+        $stmt = $this->database->prepare('INSERT INTO "public"."users"(username, password, created_on) VALUES (:username, :password, NOW())');
 
         return $stmt->execute([
             'username' => $username,
@@ -69,8 +73,7 @@ class UserRegisterService extends Service
 
     private function getUser(string $username): ?User
     {
-        $db = Connection::connect();
-        $stmt = $db->prepare('SELECT * FROM "users" WHERE username = :username');
+        $stmt = $this->database->prepare('SELECT * FROM "users" WHERE username = :username');
         $stmt->execute([
             'username' => $username
         ]);

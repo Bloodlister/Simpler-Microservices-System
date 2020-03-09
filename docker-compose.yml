@@ -73,8 +73,14 @@ services:
   websocket:
     build: ./WebSocket
     restart: always
+    volumes:
+      - ./dist:/usr/src/app/dist
     environment:
       - VIRTUAL_HOST=ws.simple.com
+      - RMQ_HOST=rabbitmq
+      - RMQ_PORT=5672
+      - RMQ_USER=rabbitmq_user
+      - RMQ_PASS=password
     volumes:
       - ./WebSocket:/usr/src/app
 

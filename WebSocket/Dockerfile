@@ -1,4 +1,4 @@
-FROM php:7.4-cli
+FROM node:alpine
 
 WORKDIR /usr/src/app
 
@@ -6,4 +6,4 @@ COPY . .
 
 EXPOSE 80
 
-CMD ["php", "socket.php"]
+CMD ["node", "./dist/app.js"]

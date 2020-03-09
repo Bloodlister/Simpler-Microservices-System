@@ -9,7 +9,7 @@ class Config
 
     public static function init(): void
     {
-        static::$config = json_decode(file_get_contents(__DIR__ . '/../config.json'), true);
+        static::$config = require(__DIR__ . '/../config.php');
     }
 
     /**

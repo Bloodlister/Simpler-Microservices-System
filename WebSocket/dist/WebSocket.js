@@ -23,14 +23,14 @@ var WebSocket = /** @class */ (function () {
                 if (!WebSocket.connections[id]) {
                     WebSocket.connections[id] = [];
                 }
-                socket.id = id;
+                Object.assign(socket, { id: id });
                 WebSocket.connections[id].push(socket);
                 WebSocket.sendId(socket);
             }
             else {
-                socket.id = id;
+                Object.assign(socket, { id: id });
                 if (WebSocket.connections[id] === undefined) {
-                    socket.destroy();
+                    socket.close();
                     return;
                 }
                 WebSocket.connections[id].push(socket);

@@ -19,7 +19,7 @@ export default class WebSocket {
     }
 
     private initializeConnection() {
-        return (socket, req) => {
+        return (socket: ws.Server, req) => {
             let id = req.url.slice(1)
 
             if (!id) {
@@ -28,15 +28,15 @@ export default class WebSocket {
                     WebSocket.connections[id] = [];
                 }
 
-                socket.id = id;
+                Object.assign(socket, { id: id });
                 WebSocket.connections[id].push(socket);
 
                 WebSocket.sendId(socket);
             } else {
-                socket.id = id;
+                Object.assign(socket, { id: id });
 
                 if (WebSocket.connections[id] === undefined) {
-                    socket.destroy();
+                    socket.close();
                     return;
                 }
 

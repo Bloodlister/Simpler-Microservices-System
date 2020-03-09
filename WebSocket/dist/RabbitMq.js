@@ -11,12 +11,25 @@ var RabbitMq = /** @class */ (function () {
     }
     RabbitMq.prototype.start = function () {
         var opt = { credentials: amqplib_1.credentials.plain(RABBITMQ_USER, RABBITMQ_PASS) };
-        amqp.connect("amqp://" + RABBITMQ_HOST + ":" + RABBITMQ_PORT, opt, function (err, conn) {
-            if (err) {
-                throw err;
-            }
-        });
+        amqp.connect("amqp://" + RABBITMQ_HOST + ":" + RABBITMQ_PORT, opt, rabbitMQConnectionHandler);
     };
     return RabbitMq;
 }());
 exports["default"] = RabbitMq;
+function rabbitMQConnectionHandler(conErr, connection) {
+    if (conErr) {
+        throw conErr;
+    }
+    createChannel(connection);
+}
+function createChannel(connection) {
+    return new Promise(function (resolve, reject) {
+        connection.createChannel(function (err, channel) {
+            if (err) {
+                console.log('Failed to create channel');
+                setTimeout(function () { return resolve(createChannel(connection)); }, 3000);
+            }
+            resolve(channel);
+        });
+    });
+}

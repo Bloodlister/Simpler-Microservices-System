@@ -73,6 +73,8 @@ services:
   websocket:
     build: ./WebSocket
     restart: always
+    depends_on: 
+      - rabbitmq
     volumes:
       - ./dist:/usr/src/app/dist
     environment:

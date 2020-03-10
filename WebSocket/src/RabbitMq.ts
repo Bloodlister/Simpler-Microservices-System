@@ -24,7 +24,7 @@ function rabbitMQConnectionHandler(conErr: any, connection: amqp.Connection): vo
 }
 
 function createChannel(connection: amqp.Connection): Promise<amqp.Channel> {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
         connection.createChannel((err: any, channel: amqp.Channel) => {
             if (err) {
                 console.log('Failed to create channel');
@@ -45,7 +45,7 @@ function messageHandler(message: amqp.Message): void {
     const messageData = JSON.parse(message.content.toString());
 
     const receiver = messageData.receiver;
-    const payloadData = messageData.payload;
+    const payloadData = messageData.data;
 
     WebSocket.sendToWS(receiver, JSON.stringify(payloadData));
 }

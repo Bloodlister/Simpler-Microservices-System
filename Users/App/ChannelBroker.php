@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Database\PostgreSQL;
 use App\MessageBrokers\RabbitMQ;
 use App\Services\Service;
 use App\Services\UserRegisterService;
@@ -22,7 +23,8 @@ class ChannelBroker
             trigger_error('Registered ' . $handler . ' To ' . $queue);
 
             /** @var Service $handlerInstance */
-            $handlerInstance = new $handler();
+            $handlerInstance = new $handler(new RabbitMQ());
+
             $channel->queue_declare($queue, false, false, false, false);
             $channel->basic_consume($queue, '', false, true, false, false, $handlerInstance->handler());
 
@@ -31,11 +33,5 @@ class ChannelBroker
                 $channel->queue_declare($writingQueue, false, false, false, false);
             }
         }
-    }
-
-    public static function connectToWebsocket(AMQPChannel $channel): void
-    {
-        $channel->queue_declare(RabbitMQ::QUEUE_WEBSOCKET, false, false, false, false);
-        trigger_error('Writing to websocket channel');
     }
 }

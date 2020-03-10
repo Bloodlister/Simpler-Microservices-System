@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Database\PostgreSQL;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use Throwable;
 
@@ -15,7 +16,7 @@ class App
     public static function run(): void
     {
         Config::init();
-
+        PostgreSQL::createConnection(...array_values(Config::get('database')));
         $rabbitMQConnection = static::connect();
 
         trigger_error('Connected to RabbitMQ');
@@ -23,7 +24,6 @@ class App
         $channel = $rabbitMQConnection->channel();
 
         ChannelBroker::setup($channel);
-        ChannelBroker::connectToWebsocket($channel);
 
         while ($channel->is_consuming()) {
             $channel->wait();

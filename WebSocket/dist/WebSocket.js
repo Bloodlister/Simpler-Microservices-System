@@ -46,20 +46,31 @@ var WebSocket = /** @class */ (function () {
     };
     WebSocket.prototype.socketCloseHandler = function () {
         return function () {
-            WebSocket.clearSocket(this.id);
+            WebSocket.clearSocket(this);
         };
     };
     WebSocket.sendId = function (socket) {
         WebSocket.connections[socket.id].forEach(function (socket) {
-            socket.send(JSON.stringify({ newId: socket.id }));
+            socket.send(JSON.stringify({ action: 'init', data: { newId: socket.id } }));
         });
     };
     WebSocket.addSocket = function (socket) {
-        WebSocket.connections[socket.id] = socket;
+        WebSocket.connections[socket.id].push(socket);
         console.log(Object.keys(WebSocket.connections).length);
     };
-    WebSocket.clearSocket = function (id) {
-        delete WebSocket.connections[id];
+    WebSocket.clearSocket = function (socket) {
+        if (!WebSocket.connections[socket.id]) {
+            return;
+        }
+        WebSocket.connections[socket.id].filter(function (wsSocket) {
+            if (wsSocket === socket) {
+                return true;
+            }
+            return false;
+        });
+        if (WebSocket.connections[socket.id].length === 0) {
+            delete WebSocket.connections[socket.id];
+        }
         console.log(Object.keys(WebSocket.connections).length);
     };
     WebSocket.connections = {};

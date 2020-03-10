@@ -3,6 +3,7 @@
 namespace App\MessageBrokers;
 
 use App\App;
+use App\WebSocket\ToastrNotification;
 use PhpAmqpLib\Message\AMQPMessage;
 
 class RabbitMQ implements BrokerInterface
@@ -16,7 +17,7 @@ class RabbitMQ implements BrokerInterface
             ->basic_publish(new AMQPMessage(json_encode($data)), '', $queue);
     }
 
-    public function websocketMessage(string $issuer, \App\WebSocket\ToastrNotification $param)
+    public function websocketMessage(string $issuer, ToastrNotification $param)
     {
         $connection = App::getConnection();
         $connection->channel()

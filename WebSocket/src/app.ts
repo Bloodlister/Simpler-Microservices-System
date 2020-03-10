@@ -3,6 +3,6 @@ import RabbitMq from "./RabbitMq";
 
 const websocket = new WebSocket();
 const rabbitMq = new RabbitMq();
-rabbitMq.start();
 
+rabbitMq.start();
 websocket.start();

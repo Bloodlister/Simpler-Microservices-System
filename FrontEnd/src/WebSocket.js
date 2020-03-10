@@ -1,8 +1,10 @@
+
 let socket = undefined;
 import toastr from 'toastr';
 
 class MessageHandler {
     static handle(message) {
+        console.log(message);
         try {
             let messageData = JSON.parse(message.data);
             MessageHandler[messageData.action](messageData.data);
@@ -16,12 +18,16 @@ class MessageHandler {
             timeOut: 50000
         });
     }
+
+    static init(data) {
+        document.cookie = 'uid=' + data.newId;
+    }
 }
 
-export function connectToSocket(uid) {
+export function connectToSocket() {
     return new Promise(resolve => {
         if (socket === undefined) {
-            socket = new WebSocket('ws://ws.simple.com?' + uid);
+            socket = new WebSocket('ws://ws.simple.com');
             socket.onopen = function () {
                 console.log('Open');
                 resolve(socket);

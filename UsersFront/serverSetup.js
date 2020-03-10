@@ -3,7 +3,6 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const redis = require('./modules/redis.js');
 const rabbitmq = require('./modules/rabbitmq.js');
-const websocket = require('./modules/websocket.js');
 
 module.exports.setupApp = function (app) {
     app.use(bodyParser.urlencoded({extended: false}));
@@ -20,7 +19,6 @@ async function connectToExternal() {
         await rabbitmq.tryUntilConnected(3000);
         await rabbitmq.connectToChannels();
         await redis.tryUntilConnected(3000);
-        await websocket.tryUntilConnected(3000);
 
         resolve();
     });

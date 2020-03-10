@@ -3,32 +3,8 @@ const jwt = require('jsonwebtoken');
 const redis = require('../../modules/redis.js');
 const rabbitmq = require('../../modules/rabbitmq.js');
 const users = require('../../modules/users.js');
-const websocket = require('../../modules/websocket.js');
 
 module.exports = class IndexController {
-    static initAction(req, res) {
-        if (req.cookies.uid === undefined) {
-            let uniqueId = uuid();
-            res.cookie('uid', uniqueId);
-            res.status(200).json({uid: uniqueId});
-        } else {
-            res.status(200).json({uid: req.cookies.uid});
-        }
-    }
-
-    static testWSAction(req, res) {
-        websocket.connect()
-            .then(socket => {
-                socket.send(JSON.stringify({
-                    receiver: req.cookies.uid,
-                    data: {
-                        message: 'Hello'
-                    }
-                }))
-            });
-
-        res.send('sent');
-    }
 
     static async usersAction(req, res) {
         let username = req.body.username;
@@ -48,7 +24,7 @@ module.exports = class IndexController {
         }
 
         let registerDetails = {
-            issuer: req.cookies.uid,
+            issuer: req.header('Receiver'),
             username: username,
             password: password,
             passwordConf: passwordConf,
@@ -66,6 +42,7 @@ module.exports = class IndexController {
 
         if (token === null) {
             res.status(401).json({error: 'Unauthorized'});
+            return;
         }
 
         try {
@@ -73,8 +50,10 @@ module.exports = class IndexController {
 
             if (tokenData && tokenData.passwordHash === passwordHash) {
                 res.status(200).json({token: token});
+                return;
             } else {
                 res.status(401).json({error: 'Unauthorized'});
+                return;
             }
         } catch (e) {
             if (e.name === 'TokenExpiredError') {
@@ -82,14 +61,17 @@ module.exports = class IndexController {
 
                 if (tokenDecoded.passwordHash !== passwordHash) {
                     res.status(401).json({error: 'Unauthorized'});
+                    return;
                 }
 
                 redis.setUserJWT(username, jwt.sign({passwordHash: passwordHash}, users.JWT_SECRET, {expiresIn: '60000'}))
                     .then(token => {
                         res.status(201).json({token: token});
+                        return;
                     });
             } else {
                 res.status(500).send(JSON.stringify({error: e.message}));
+                return;
             }
         }
     }

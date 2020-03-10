@@ -2,6 +2,7 @@
 exports.__esModule = true;
 var amqp = require("amqplib/callback_api");
 var amqplib_1 = require("amqplib");
+var WebSocket_1 = require("./WebSocket");
 var RABBITMQ_HOST = String(process.env.RMQ_HOST);
 var RABBITMQ_PORT = String(process.env.RMQ_PORT);
 var RABBITMQ_USER = String(process.env.RMQ_USER);
@@ -20,10 +21,10 @@ function rabbitMQConnectionHandler(conErr, connection) {
     if (conErr) {
         throw conErr;
     }
-    createChannel(connection);
+    createChannel(connection).then(function (channel) { return createQueues(channel); });
 }
 function createChannel(connection) {
-    return new Promise(function (resolve, reject) {
+    return new Promise(function (resolve) {
         connection.createChannel(function (err, channel) {
             if (err) {
                 console.log('Failed to create channel');
@@ -32,4 +33,14 @@ function createChannel(connection) {
             resolve(channel);
         });
     });
+}
+function createQueues(channel) {
+    channel.assertQueue('websocket', { durable: false });
+    channel.consume('websocket', messageHandler, { noAck: true });
+}
+function messageHandler(message) {
+    var messageData = JSON.parse(message.content.toString());
+    var receiver = messageData.receiver;
+    var payloadData = messageData.data;
+    WebSocket_1["default"].sendToWS(receiver, JSON.stringify(payloadData));
 }

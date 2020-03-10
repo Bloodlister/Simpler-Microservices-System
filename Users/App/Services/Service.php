@@ -2,12 +2,18 @@
 
 namespace App\Services;
 
+use App\Database\DatabaseInterface;
+use App\DI;
 use App\MessageBrokers\BrokerInterface;
-use App\MessageBrokers\RabbitMQ;
 use App\Services\Payloads\Payload;
-use App\WebSocket;
+use App\WebSocket\ToastrNotification;
 use PhpAmqpLib\Message\AMQPMessage;
 
+/**
+ * Class Service
+ * @package App\Services
+ * @method run(Payload $payload): void
+ */
 abstract class Service
 {
     public const CHANNEL = '';
@@ -16,29 +22,29 @@ abstract class Service
 
     protected BrokerInterface $broker;
 
-    public function setBroker(BrokerInterface $broker): void
+    protected DatabaseInterface $database;
+
+    public function __construct(BrokerInterface $broker)
     {
         $this->broker = $broker;
     }
 
     /**
-     * @return mixed
+     * @return \Closure
      */
     final public function handler(): \Closure
     {
         return function (AMQPMessage $msg) {
             $payloadClass = static::PAYLOAD_CLASS;
             $payload = new $payloadClass(json_decode($msg->body, true));
-            $this->setBroker(new RabbitMQ());
             try {
-                $this->run($payload);
+                DI::executeService($this, $payload);
             } catch (\Exception $exception) {
-                WebSocket::send($payload->issuer, new WebSocket\ToastrNotification(WebSocket\ToastrNotification::STATUS_ERROR, 'Something went wrong', $exception->getMessage()));
+                trigger_error($exception->getMessage(), E_USER_ERROR);
+                $this->broker->websocketMessage($payload->issuer, new ToastrNotification(ToastrNotification::STATUS_ERROR, 'Something went wrong', $exception->getMessage()));
             }
         };
     }
 
     abstract function getWritingQueues(): array;
-
-    abstract function run(Payload $payload): void;
 }

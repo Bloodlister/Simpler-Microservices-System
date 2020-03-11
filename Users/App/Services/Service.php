@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Database\DatabaseInterface;
-use App\DI;
+use App\ServiceDI;
 use App\MessageBrokers\BrokerInterface;
 use App\Services\Payloads\Payload;
 use App\WebSocket\ToastrNotification;
@@ -38,7 +38,7 @@ abstract class Service
             $payloadClass = static::PAYLOAD_CLASS;
             $payload = new $payloadClass(json_decode($msg->body, true));
             try {
-                DI::executeService($this, $payload);
+                ServiceDI::executeService($this, $payload);
             } catch (\Exception $exception) {
                 trigger_error($exception->getMessage(), E_USER_ERROR);
                 $this->broker->websocketMessage($payload->issuer, new ToastrNotification(ToastrNotification::STATUS_ERROR, 'Something went wrong', $exception->getMessage()));

@@ -5,16 +5,16 @@ namespace App;
 use App\Exception\MissingReferenceException;
 use App\Services\Payloads\Payload;
 use App\Services\Service;
-use ReflectionClass;
+use ReflectionMethod;
 
-class DI
+class ServiceDI
 {
     /** @var \Closure[] $instances */
     private static array $instances = [];
 
     public static function executeService(Service $service, Payload $payload): void
     {
-        $serviceRef = new \ReflectionMethod($service, 'run');
+        $serviceRef = new ReflectionMethod($service, 'run');
         $parameters = $serviceRef->getParameters();
         $parameterInstances = [];
         foreach ($parameters as $parameter) {

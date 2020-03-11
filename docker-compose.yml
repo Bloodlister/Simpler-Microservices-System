@@ -61,10 +61,10 @@ services:
     volumes:
       - ./Users:/usr/src/app
     environment:
-      - POSTGRES_HOST=postgres
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASS=postgres
+      - DB_HOST=postgres
+      - DB_DATABASE=postgres
+      - DB_USER=postgres
+      - DB_PASS=postgres
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_PORT=5672
       - RABBITMQ_USER=rabbitmq_user

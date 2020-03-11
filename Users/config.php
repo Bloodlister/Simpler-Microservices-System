@@ -1,10 +1,10 @@
 <?php
 return [
     'database'  => [
-        'host'     => getenv('POSTGRES_HOST'),
-        'username' => getenv('POSTGRES_USER'),
-        'password' => getenv('POSTGRES_PASS'),
-        'database' => getenv('POSTGRES_DB'),
+        'host'     => getenv('DB_HOST'),
+        'username' => getenv('DB_USER'),
+        'password' => getenv('DB_PASS'),
+        'database' => getenv('DB_DATABASE'),
     ],
     'rabbit_mq' => [
         'host'     => getenv('RABBITMQ_HOST'),
